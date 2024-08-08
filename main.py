@@ -7,6 +7,7 @@ app = FastAPI()
 
 origins = [
     "http://127.0.0.1:5500",
+    "https://estgui.github.io",
 ]
 
 app.add_middleware(
