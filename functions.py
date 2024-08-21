@@ -23,7 +23,7 @@ def utility(state):
     for pos in possibilities:
         new_state = result(state, pos)
 
-        if terminal(new_state):
+        if bool(terminal(new_state)):
             value = get_state_value(new_state)
             actions.append((pos, value, 100 if value == 1 else 0))
 
@@ -68,20 +68,21 @@ def get_state_value(state):
         
     return 0
 
-
 def terminal(board):
-    for row in board:
+    for i, row in enumerate(board):
         if all([cell == row[0] and cell != '' for cell in row]):
-            return True
+            return [genIndex((i, j)) for j in range(3)]
 
     for col in range(3):
         if all([board[row][col] == board[0][col] and board[0][col] != '' for row in range(3)]):
-            return True
+            return [genIndex((row, col)) for row in range(3)]
 
-    if (board[0][0] == board[1][1] == board[2][2] and board[0][0] != '') or \
-       (board[0][2] == board[1][1] == board[2][0] and board[1][1] != ''):
-        return True
-        
+    if board[0][0] == board[1][1] == board[2][2] and board[0][0] != '':
+        return [0, 4, 8]
+
+    if board[0][2] == board[1][1] == board[2][0] and board[1][1] != '':
+        return [2, 1, 7]
+
     if all([cell != '' for row in board for cell in row]):
         return True
 

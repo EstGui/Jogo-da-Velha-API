@@ -26,3 +26,9 @@ def get_data(state: State):
     board = state.model_dump()['board']
     new_board = genIndex(utility(board)[0])
     return new_board
+
+
+@app.post("/isTerminal/")
+def getStatus(state: State):
+    board = state.model_dump()['board']
+    return terminal(board)
