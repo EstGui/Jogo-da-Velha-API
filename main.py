@@ -31,4 +31,4 @@ def get_data(state: State):
 @app.post("/isTerminal/")
 def getStatus(state: State):
     board = state.model_dump()['board']
-    return analyze_board(board)
+    return terminal(board)
