@@ -1,92 +1,61 @@
-import copy 
 from random import choice
+from alg_lin import conferirSimetrias
 
 
 def genCordinates(num):
-    row = (num - 1) // 3
-    column = (num - 1) % 3
+    return divmod(num - 1, 3)
 
-    return row, column
 
 def genIndex(tuple):
     return tuple[0] * 3 + tuple[1]
 
 
 def utility(state):
-    if all([cell == '' for row in state for cell in row]):
-        ini_opts = [[(0, 0), ''], [(0, 2), ''], [(2, 0), ''], [(2, 2), '']]
-        return choice(ini_opts)
-    
     actions = []
     possibilities = act(state)
 
     for pos in possibilities:
-        new_state = result(state, pos)
+        new_state = result(state, pos[0])
 
-        if bool(terminal(new_state)):
-            value = get_state_value(new_state)
+        result_value, result_info = analyze_board(new_state)
+
+        if result_info is not None:
+            value = result_value
             actions.append((pos, value, 100 if value == 1 else 0))
-
         else:
             value, prob_x = utility(new_state)[1:]
             actions.append((pos, value, prob_x))
 
-    if len(actions) == 8:
-        pass
 
     if player(state) == 'X':
-        maior = max([a[1] for a in actions])
-        melhor = max([p[2] for p in actions if p[1] == maior])
-        mel_opts = [x for x in actions if x[2] == melhor and x[1] == maior]
-
-        rand_choice = choice(mel_opts)
-
-        return (rand_choice[0], rand_choice[1], ([x[1] for x in actions].count(1) / len(actions)) * 100)
-    
+        minmax = max([a[1] for a in actions])
+        melhor = max([p[2] for p in actions if p[1] == minmax])
     else:
-        menor = actions[0]
-        for a in actions:
-            if a[1] < menor[1]:
-                menor = a
-        # menor = min([a[1] for a in actions])
+        minmax = min([a[1] for a in actions])
+        melhor = min([p[2] for p in actions if p[1] == minmax])
 
-        return (menor[0], menor[1], ([x[1] for x in actions].count(1) / len(actions)) * 100)
+    mel_opts = [x for x in actions if x[1] == minmax and x[2] == melhor]
+    rand_choice = choice(mel_opts)
+
+    return (choice(rand_choice[0]), rand_choice[1], (sum([len(x[0]) for x in actions if x[1] == 1]) / sum(len(x[0]) for x in actions)) * 100)
     
 
-def get_state_value(state):
-    for row in state:
-        if all([cell == row[0] and cell != '' for cell in row]):
-            return 1 if row[0] == 'X' else -1 
-
-    for col in range(3):
-        if all([state[row][col] == state[0][col] and state[0][col] != '' for row in range(3)]):
-            return 1 if state[0][col] == 'X' else -1
-
-    if (state[0][0] == state[1][1] == state[2][2] and state[0][0] != '') or \
-       (state[0][2] == state[1][1] == state[2][0] and state[1][1] != ''):
-        return 1 if state[1][1] == 'X' else -1
-        
-    return 0
-
-def terminal(board):
-    for i, row in enumerate(board):
-        if all([cell == row[0] and cell != '' for cell in row]):
-            return [genIndex((i, j)) for j in range(3)]
-
-    for col in range(3):
-        if all([board[row][col] == board[0][col] and board[0][col] != '' for row in range(3)]):
-            return [genIndex((row, col)) for row in range(3)]
+def analyze_board(board):
+    for i in range(3):
+        if board[i][0] == board[i][1] == board[i][2] and board[i][0] != '':
+            return 1 if board[i][0] == 'X' else -1, [i * 3, i * 3 + 1, i * 3 + 2]
+        if board[0][i] == board[1][i] == board[2][i] and board[0][i] != '':
+            return 1 if board[0][i] == 'X' else -1, [i, i + 3, i + 6]
 
     if board[0][0] == board[1][1] == board[2][2] and board[0][0] != '':
-        return [0, 4, 8]
+        return 1 if board[0][0] == 'X' else -1, [0, 4, 8]
+    if board[0][2] == board[1][1] == board[2][0] and board[0][2] != '':
+        return 1 if board[0][2] == 'X' else -1, [2, 4, 6]
 
-    if board[0][2] == board[1][1] == board[2][0] and board[1][1] != '':
-        return [2, 1, 7]
+    if all(cell != '' for row in board for cell in row):
+        return 0, True 
 
-    if all([cell != '' for row in board for cell in row]):
-        return True
-
-    return False
+    return 0, None 
 
 
 def player(board):
@@ -100,11 +69,16 @@ def player(board):
 
 
 def act(board):
-    return [(row, col) for row in range(3) for col in range(3) if board[row][col] == '']
+    simetrics = conferirSimetrias(board)
+
+    if simetrics:
+        return simetrics
+    else:
+        return [[(row, col)] for row in range(3) for col in range(3) if board[row][col] == '']
 
 
 def result(state, action):
-    new_state = copy.deepcopy(state)
+    new_state = [row[:] for row in state]
     new_state[action[0]][action[1]] = player(state)
 
     return new_state
