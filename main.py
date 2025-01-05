@@ -31,7 +31,7 @@ def get_data(state: State):
     status = analyzeBoard(board)
 
     result = {
-        "play": play[0],
+        "play": play[0] if play else None,
         "victory": status[0],
         "playFields": status[1]
     }

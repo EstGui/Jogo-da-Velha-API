@@ -32,22 +32,25 @@ def utility(state):
     possibilities = act(state)
     actions = []
 
-    for p in possibilities:
-        new_state = result(state, p[0])
+    if possibilities:
+        for p in possibilities:
+            new_state = result(state, p[0])
 
-        result_value, result_info = analyzeBoard(new_state)
+            result_value, result_info = analyzeBoard(new_state)
 
-        if result_info:
-            actions.append((p, result_value, 100 if result_value == 1 else 0))
-        else:
-            value, prob_x = utility(new_state)[1:]
-            actions.append((p, value, prob_x))
+            if result_info:
+                actions.append((p, result_value, 100 if result_value == 1 else 0))
+            else:
+                value, prob_x = utility(new_state)[1:]
+                actions.append((p, value, prob_x))
 
-    rand_choice = getBestMove(state, actions)
+        rand_choice = getBestMove(state, actions)
 
-    return (choice(rand_choice[0]),
-            rand_choice[1],
-            (sum([len(x[0]) for x in actions if x[1] == 1]) / sum(len(x[0]) for x in actions)) * 100)
+        return (choice(rand_choice[0]),
+                rand_choice[1],
+                (sum([len(x[0]) for x in actions if x[1] == 1]) / sum(len(x[0]) for x in actions)) * 100)
+    else:
+        return None
 
 
 def getBestMove(state, actions):
