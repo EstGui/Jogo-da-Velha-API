@@ -1,12 +1,11 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from functions import *
+from algorithm import *
 
 app = FastAPI()
 
 origins = [
-    "http://127.0.0.1:5500",
     "https://estgui.github.io",
     "https://tic-tac-toe-site-pxg.vercel.app"
 ]
@@ -19,17 +18,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 class State(BaseModel):
     board: list
 
+
 @app.post("/play/")
 def get_data(state: State):
+
     board = state.model_dump()['board']
-    new_board = genIndex(utility(board)[0])
-    return new_board
+    play = utility(board)
+    status = analyzeBoard(board)
+
+    result = {
+        "play": play[0],
+        "victory": status[0],
+        "playFields": status[1]
+    }
+
+    return result
 
 
 @app.post("/isTerminal/")
 def getStatus(state: State):
     board = state.model_dump()['board']
-    return terminal(board)
+
+    status = analyzeBoard(board)
+
+    result = {
+        "victory": status[0],
+        "playFields": status[1]
+    }
+
+    return result
